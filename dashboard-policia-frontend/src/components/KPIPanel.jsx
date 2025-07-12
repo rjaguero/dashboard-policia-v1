@@ -1,0 +1,130 @@
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Activity, Users, TrendingUp, Heart, Brain, Stethoscope, Baby } from 'lucide-react';
+
+const KPIPanel = ({ data }) => {
+  console.log("KPIPanel: Data received:", data);
+  if (!data) return <div>Cargando KPIs...</div>;
+
+  // Calculate 'Realizan Actividad Física y tienen hijos' percentage
+  const childrenPhysicalActivityData = data.habits?.children_physical_activity_cross || [];
+  const hasChildrenAndPhysicalActivity = childrenPhysicalActivityData.find(
+    item => item.has_children === 'Sí' && item.physical_activity === 'Sí'
+  );
+  const totalResponses = data.kpis?.total_responses || 1; // Avoid division by zero
+  const childrenPhysicalActivityPercentage = hasChildrenAndPhysicalActivity 
+    ? ((hasChildrenAndPhysicalActivity.count / (childrenPhysicalActivityData.reduce((sum, item) => sum + item.count, 0) || 1)) * 100).toFixed(2) 
+    : 0;
+
+  const kpis = [
+    {
+      title: 'Total Encuestados',
+      value: data.kpis?.total_responses || 0,
+      icon: Users,
+      description: 'Respuestas totales',
+      color: 'text-blue-600'
+    },
+    {
+      title: 'Actividad Física',
+      value: `${data.kpis?.physical_activity_percentage || 0}%`,
+      icon: Activity,
+      description: 'Realizan ejercicio',
+      color: 'text-green-600'
+    },
+    {
+      title: 'Deseo de Mejora',
+      value: `${data.kpis?.needs_improvement_percentage || 0}%`,
+      icon: TrendingUp,
+      description: 'Quieren mejorar factores',
+      color: 'text-orange-600'
+    },
+    {
+      title: 'Actividad Física con Hijos',
+      value: `${childrenPhysicalActivityPercentage}%`,
+      icon: Baby,
+      description: 'Hacen ejercicio y tienen hijos',
+      color: 'text-purple-600'
+    },
+    {
+      title: 'Capacitación Seguridad',
+      value: `${data.kpis?.safety_training_percentage || 0}%`,
+      icon: Brain,
+      description: 'Recibieron capacitación',
+      color: 'text-purple-600'
+    },
+    {
+      title: 'Conocimiento Servicios',
+      value: `${data.kpis?.occupational_knowledge_percentage || 0}%`,
+      icon: Heart,
+      description: 'Conocen servicios de salud',
+      color: 'text-red-600'
+    },
+    {
+      title: 'Chequeos Médicos',
+      value: `${data.kpis?.medical_checkup_percentage || 0}%`,
+      icon: Stethoscope,
+      description: 'Se realizaron chequeos',
+      color: 'text-indigo-600'
+    }
+  ];
+
+  const topFactors = data.top_factors_to_improve || {};
+  const factorsList = Object.entries(topFactors).slice(0, 3);
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+        {kpis.map((kpi, index) => {
+          const IconComponent = kpi.icon;
+          return (
+            <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {kpi.title}
+                </CardTitle>
+                <IconComponent className={`h-4 w-4 ${kpi.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{kpi.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {kpi.description}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Top Factors to Improve */}
+      {factorsList.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Principales Factores a Mejorar</CardTitle>
+            <CardDescription>Los 3 factores más mencionados para mejorar la calidad de vida</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {factorsList.map(([factor, count], index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      index === 0 ? 'bg-red-500' : 
+                      index === 1 ? 'bg-orange-500' : 'bg-yellow-500'
+                    }`}></div>
+                    <span className="text-sm font-medium">{factor}</span>
+                  </div>
+                  <span className="text-sm text-gray-600">{count} menciones</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default KPIPanel;
+
+
