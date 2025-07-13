@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://dashboard-policia-backend.onrender.com/api';
 
 class ApiService {
   async fetchData(endpoint, params = {}) {
